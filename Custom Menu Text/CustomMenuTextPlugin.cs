@@ -41,7 +41,10 @@ namespace TestBSPlugin
                 gameDirectory = gameDirectory.Replace('\\', '/');
                 if (File.Exists(gameDirectory + FILE_PATH))
                 {
-                    string[] linesInFile = File.ReadAllLines(gameDirectory + FILE_PATH);
+                    string dataInFile = File.ReadAllText(gameDirectory + FILE_PATH);
+                    string[] entriesInFile = dataInFile.Split(new string[]{ "\n\n", "\r\n\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    System.Random r = new System.Random();
+                    string[] linesInFile = entriesInFile[r.Next(entriesInFile.Length)].Split(new string[]{ "\n","\r\n"},StringSplitOptions.RemoveEmptyEntries);
 
                     // if there's no text in the file, we leave the default values
                     if (linesInFile.Length > 0)
@@ -63,13 +66,6 @@ namespace TestBSPlugin
                 // make sure text is in all caps
                 newFirstLine = newFirstLine.ToUpperInvariant();
                 newSecondLine = newSecondLine.ToUpperInvariant();
-
-                // troll @Mexico King
-                if (newFirstLine == "MEAT" && newSecondLine == "SABER")
-                {
-                    newFirstLine = "BEAT";
-                    newSecondLine = "SAMER";
-                }
 
                 TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
                 TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
