@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,10 +12,12 @@ namespace TestBSPlugin
     public class CustomMenuTextPlugin : IPlugin
     {
         // path to the file to load text from
-        private const string FILE_PATH = "/CustomMenuText.txt";
+        private const string FILE_PATH = "/UserData/CustomMenuText.txt";
+
+        public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
 
         public string Name => "Custom Menu Text";
-        public string Version => "1.0.0";
+        public string Version => "2.0.0";
         public void OnApplicationStart()
         {
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
@@ -31,50 +32,98 @@ namespace TestBSPlugin
         {
             if (arg0.buildIndex == 1) // Menu scene
             {
-                // TODO: factor code out into sensible functions rather than one big block of code
-
-                // keep the base game's text in case we don't find the file
-                string newFirstLine = "BEAT";
-                string newSecondLine = "SABER";
-
+                // Look for the custom text file
                 string gameDirectory = Environment.CurrentDirectory;
                 gameDirectory = gameDirectory.Replace('\\', '/');
                 if (File.Exists(gameDirectory + FILE_PATH))
                 {
-                    string dataInFile = File.ReadAllText(gameDirectory + FILE_PATH);
-                    string[] entriesInFile = dataInFile.Split(new string[]{ "\n\n", "\r\n\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                    System.Random r = new System.Random();
-                    string[] linesInFile = entriesInFile[r.Next(entriesInFile.Length)].Split(new string[]{ "\n","\r\n"},StringSplitOptions.RemoveEmptyEntries);
+                    var linesInFile = File.ReadLines(gameDirectory + FILE_PATH);
 
-                    // if there's no text in the file, we leave the default values
-                    if (linesInFile.Length > 0)
+                    // Strip comments (all lines beginning with #)
+                    linesInFile = linesInFile.Where(s => s == "" || s[0] != '#');
+
+                    // Collect entries, splitting on empty lines
+                    List<string[]> entriesInFile = new List<string[]>();
+                    List<string> currentEntry = new List<string>();
+                    foreach(string line in linesInFile)
                     {
-                        // the first line exists, so use it
-                        newFirstLine = linesInFile[0];
-                        if (linesInFile.Length > 1)
+                        if (line == "")
                         {
-                            newSecondLine = linesInFile[1];
+                            entriesInFile.Add(currentEntry.ToArray());
+                            currentEntry.Clear();
                         }
                         else
                         {
-                            // if the file has only one line, don't display a second line
-                            newSecondLine = "";
+                            currentEntry.Add(line);
                         }
                     }
+                    if (currentEntry.Count != 0)
+                    {
+                        // in case the last entry doesn't end in a newline
+                        entriesInFile.Add(currentEntry.ToArray());
+                    }
+
+                    if (entriesInFile.Count == 0)
+                    {
+                        // No entries; warn and default to BEAT SABER
+                        Console.WriteLine("[CustomMenuText] File found, but it contained no entries!");
+                        setText(DEFAULT_TEXT);
+                    }
+                    else
+                    {
+                        // Choose an entry randomly
+
+                        // Unity's random seems to give biased results
+                        // int entryPicked = UnityEngine.Random.Range(0, entriesInFile.Count);
+                        // using System.Random instead
+                        System.Random r = new System.Random();
+                        int entryPicked = r.Next(entriesInFile.Count);
+
+                        // Set the text
+                        setText(entriesInFile[entryPicked]);
+                    }
                 }
+                else
+                {
+                    // No custom text file found!
+                    // Print an error in the console
+                    Console.WriteLine("[CustomMenuText] No custom text file found!");
+                    Console.WriteLine("Make sure the file is in the UserData folder and named CustomMenuText.txt!");
 
-                // make sure text is in all caps
-                newFirstLine = newFirstLine.ToUpperInvariant();
-                newSecondLine = newSecondLine.ToUpperInvariant();
+                    // Default to BEAT SABER
+                    setText(DEFAULT_TEXT);
+                }
+            }
+        }
 
-                TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
-                TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
-                TextMeshPro wasAT = GameObject.Find("AT").GetComponent<TextMeshPro>();
-                TextMeshPro line2 = GameObject.Find("SABER").GetComponent<TextMeshPro>();
+        /// <summary>
+        /// Sets the text in the main menu (which normally reads BEAT SABER) to
+        /// the text of your choice. TextMeshPro formatting can be used here.
+        /// Additionally:
+        /// - If the text is exactly 2 lines long, the first line will be
+        ///   displayed in blue, and the second will be displayed in red.
+        ///   - If the first line contains exactly 4 characters, the second will
+        ///     flicker (like the E in BEAT SABER).
+        /// Warning: Only call this function from the main menu scene!
+        /// </summary>
+        /// <param name="lines">
+        /// The text to display, separated by lines (from top to bottom).
+        /// </param>
+        public void setText(string[] lines)
+        {
+            TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
+            TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
+            TextMeshPro wasAT = GameObject.Find("AT").GetComponent<TextMeshPro>();
+            TextMeshPro wasSABER = GameObject.Find("SABER").GetComponent<TextMeshPro>();
+
+            if (lines.Length == 2)
+            {
+                string newFirstLine = lines[0];
+                string newSecondLine = lines[1];
 
                 // TODO: put more thought/work into keeping the flicker
                 // currently this relies on the font being monospace, which it's not even
-                if (newFirstLine.Length == 4) 
+                if (newFirstLine.Length == 4)
                 {
                     // we can fit it onto the existing text meshes perfectly
                     // thereby keeping the flicker effect on the second character
@@ -90,20 +139,42 @@ namespace TestBSPlugin
 
                     // to make sure the text is centered, line up the AT with SABER's position
                     // but keep its y value
-                    Vector3 newPos = line2.transform.position;
+                    Vector3 newPos = wasSABER.transform.position;
                     newPos.y = wasAT.transform.position.y;
                     wasAT.transform.position = newPos;
 
                     wasAT.text = newFirstLine;
                 }
 
-                line2.text = newSecondLine;
+                wasSABER.text = newSecondLine;
 
                 // make sure text of any length won't wrap onto multiple lines
                 wasAT.overflowMode = TextOverflowModes.Overflow;
-                line2.overflowMode = TextOverflowModes.Overflow;
+                wasSABER.overflowMode = TextOverflowModes.Overflow;
                 wasAT.enableWordWrapping = false;
-                line2.enableWordWrapping = false;
+                wasSABER.enableWordWrapping = false;
+            }
+            else
+            {
+                // Hide "BEAT" entirely; we're just going to use SABER
+                wasB.text = "";
+                wasE.text = "";
+                wasAT.text = "";
+
+                // Center "SABER" vertically (halfway between the original positions)
+                Vector3 newPos = wasSABER.transform.position;
+                newPos.y = (newPos.y + wasB.transform.position.y) / 2;
+                wasSABER.transform.position = newPos;
+
+                // Set text color to white by default (users can change it with formatting anyway)
+                wasSABER.color = Color.white;
+
+                // Prevent undesired word wrap
+                wasSABER.overflowMode = TextOverflowModes.Overflow;
+                wasSABER.enableWordWrapping = false;
+
+                // Set the text
+                wasSABER.text = String.Join("\n", lines);
             }
         }
 
