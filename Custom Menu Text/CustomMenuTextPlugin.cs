@@ -14,10 +14,14 @@ namespace TestBSPlugin
         // path to the file to load text from
         private const string FILE_PATH = "/UserData/CustomMenuText.txt";
 
+        // used if we can't load any custom entries
         public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
 
+        // caches entries loaded from the file so we don't need to do IO every time the menu loads
+        public static List<string[]> allEntries = null;
+
         public string Name => "Custom Menu Text";
-        public string Version => "2.0.0";
+        public string Version => "2.1.0";
         public void OnApplicationStart()
         {
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
@@ -30,70 +34,80 @@ namespace TestBSPlugin
 
         private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
-            if (arg0.buildIndex == 1) // Menu scene
+            if (arg0.name == "Menu") // Only run in menu scene
             {
-                // Look for the custom text file
-                string gameDirectory = Environment.CurrentDirectory;
-                gameDirectory = gameDirectory.Replace('\\', '/');
-                if (File.Exists(gameDirectory + FILE_PATH))
+                if (allEntries == null)
                 {
-                    var linesInFile = File.ReadLines(gameDirectory + FILE_PATH);
-
-                    // Strip comments (all lines beginning with #)
-                    linesInFile = linesInFile.Where(s => s == "" || s[0] != '#');
-
-                    // Collect entries, splitting on empty lines
-                    List<string[]> entriesInFile = new List<string[]>();
-                    List<string> currentEntry = new List<string>();
-                    foreach(string line in linesInFile)
-                    {
-                        if (line == "")
-                        {
-                            entriesInFile.Add(currentEntry.ToArray());
-                            currentEntry.Clear();
-                        }
-                        else
-                        {
-                            currentEntry.Add(line);
-                        }
-                    }
-                    if (currentEntry.Count != 0)
-                    {
-                        // in case the last entry doesn't end in a newline
-                        entriesInFile.Add(currentEntry.ToArray());
-                    }
-
-                    if (entriesInFile.Count == 0)
-                    {
-                        // No entries; warn and default to BEAT SABER
-                        Console.WriteLine("[CustomMenuText] File found, but it contained no entries!");
-                        setText(DEFAULT_TEXT);
-                    }
-                    else
-                    {
-                        // Choose an entry randomly
-
-                        // Unity's random seems to give biased results
-                        // int entryPicked = UnityEngine.Random.Range(0, entriesInFile.Count);
-                        // using System.Random instead
-                        System.Random r = new System.Random();
-                        int entryPicked = r.Next(entriesInFile.Count);
-
-                        // Set the text
-                        setText(entriesInFile[entryPicked]);
-                    }
+                    reloadFile();
+                }
+                if (allEntries.Count == 0)
+                {
+                    setText(DEFAULT_TEXT);
                 }
                 else
                 {
-                    // No custom text file found!
-                    // Print an error in the console
-                    Console.WriteLine("[CustomMenuText] No custom text file found!");
-                    Console.WriteLine("Make sure the file is in the UserData folder and named CustomMenuText.txt!");
+                    // Choose an entry randomly
 
-                    // Default to BEAT SABER
-                    setText(DEFAULT_TEXT);
+                    // Unity's random seems to give biased results
+                    // int entryPicked = UnityEngine.Random.Range(0, entriesInFile.Count);
+                    // using System.Random instead
+                    System.Random r = new System.Random();
+                    int entryPicked = r.Next(allEntries.Count);
+
+                    // Set the text
+                    setText(allEntries[entryPicked]);
                 }
             }
+        }
+
+        public static List<string[]> readFromFile(string relPath)
+        {
+            List<string[]> entriesInFile = new List<string[]>();
+
+            // Look for the custom text file
+            string gameDirectory = Environment.CurrentDirectory;
+            gameDirectory = gameDirectory.Replace('\\', '/');
+            if (File.Exists(gameDirectory + FILE_PATH))
+            {
+                var linesInFile = File.ReadLines(gameDirectory + FILE_PATH);
+
+                // Strip comments (all lines beginning with #)
+                linesInFile = linesInFile.Where(s => s == "" || s[0] != '#');
+
+                // Collect entries, splitting on empty lines
+                List<string> currentEntry = new List<string>();
+                foreach (string line in linesInFile)
+                {
+                    if (line == "")
+                    {
+                        entriesInFile.Add(currentEntry.ToArray());
+                        currentEntry.Clear();
+                    }
+                    else
+                    {
+                        currentEntry.Add(line);
+                    }
+                }
+                if (currentEntry.Count != 0)
+                {
+                    // in case the last entry doesn't end in a newline
+                    entriesInFile.Add(currentEntry.ToArray());
+                }
+                if (entriesInFile.Count == 0)
+                {
+                    // No entries; warn and continue
+                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries!");
+                }
+            }
+            else
+            {
+                // No custom text file found!
+                // Print an error in the console
+                Console.WriteLine("[CustomMenuText] No custom text file found!");
+                Console.WriteLine("Make sure the file is in the UserData folder and named CustomMenuText.txt!");
+            }
+
+            return entriesInFile;
         }
 
         /// <summary>
@@ -109,7 +123,7 @@ namespace TestBSPlugin
         /// <param name="lines">
         /// The text to display, separated by lines (from top to bottom).
         /// </param>
-        public void setText(string[] lines)
+        public static void setText(string[] lines)
         {
             TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
             TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
@@ -176,6 +190,11 @@ namespace TestBSPlugin
                 // Set the text
                 wasSABER.text = String.Join("\n", lines);
             }
+        }
+
+        public void reloadFile()
+        {
+            allEntries = readFromFile(FILE_PATH);
         }
 
         public void OnApplicationQuit()
