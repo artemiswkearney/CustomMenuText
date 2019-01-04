@@ -30,11 +30,7 @@ namespace TestBSPlugin
 
         private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
         {
-        }
-
-        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
-        {
-            if (arg0.name == "Menu") // Only run in menu scene
+            if (arg1.name == "Menu") // Only run in menu scene
             {
                 if (allEntries == null)
                 {
@@ -58,6 +54,11 @@ namespace TestBSPlugin
                     setText(allEntries[entryPicked]);
                 }
             }
+        }
+
+        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {
+           
         }
 
         public static List<string[]> readFromFile(string relPath)
@@ -125,10 +126,54 @@ namespace TestBSPlugin
         /// </param>
         public static void setText(string[] lines)
         {
-            TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
-            TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
-            TextMeshPro wasAT = GameObject.Find("AT").GetComponent<TextMeshPro>();
-            TextMeshPro wasSABER = GameObject.Find("SABER").GetComponent<TextMeshPro>();
+            //       TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
+            //      TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
+            //       TextMeshPro wasAT = GameObject.Find("AT").GetComponent<TextMeshPro>();
+            //       TextMeshPro wasSABER = GameObject.Find("SABER").GetComponent<TextMeshPro>();
+            //      TextMeshPro wasAT = new GameObject("CustomMenuTextTop").AddComponent<TextMeshPro>();
+            //Setup Logo Replacements
+
+            var originalLogo = GameObject.Find("LogoBAT").GetComponent<SpriteRenderer>();
+
+            TextMeshPro wasAT;
+            GameObject textObj = new GameObject("CustomMenuText");
+            wasAT = textObj.AddComponent<TextMeshPro>();
+            wasAT.text = "";
+            wasAT.alignment = TextAlignmentOptions.Center;
+            wasAT.fontSize = 12;
+            wasAT.color = Color.white;
+            wasAT.font = Resources.Load<TMP_FontAsset>("Beon");
+            wasAT.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
+            wasAT.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
+            wasAT.rectTransform.position = new Vector3(0.63f, 21.61f, 24.82f);
+            wasAT.richText = true;
+    
+            textObj.transform.localScale *= 4.0f;
+
+            TextMeshPro wasSABER;
+            GameObject textObj2 = new GameObject("CustomMenuText-Bot");
+            wasSABER = textObj2.AddComponent<TextMeshPro>();
+            wasSABER.text = "";
+            wasSABER.alignment = TextAlignmentOptions.Center;
+            wasSABER.fontSize = 12;
+            wasSABER.color = Color.white;
+            wasSABER.font = Resources.Load<TMP_FontAsset>("Beon");
+            wasSABER.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
+            wasSABER.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
+            wasSABER.rectTransform.position = new Vector3(0f, 17f, 24.82f);
+            wasSABER.richText = true;
+            textObj2.transform.localScale *= 5.0f;
+
+
+
+            //Logo Top Pos : 0.63, 21.61, 24.82
+            // Logo Bottom Pos : 0, 17.38, 24.82
+            //Destroy Default Logo
+            GameObject.Destroy(GameObject.Find("LogoE").GetComponent<SpriteRenderer>());
+            GameObject.Destroy(GameObject.Find("LogoBAT").GetComponent<SpriteRenderer>());
+            GameObject.Destroy(GameObject.Find("LogoSABER").GetComponent<SpriteRenderer>());
+
+
 
             if (lines.Length == 2)
             {
@@ -141,19 +186,19 @@ namespace TestBSPlugin
                 {
                     // we can fit it onto the existing text meshes perfectly
                     // thereby keeping the flicker effect on the second character
-                    wasB.text = newFirstLine[0].ToString();
-                    wasE.text = newFirstLine[1].ToString();
-                    wasAT.text = newFirstLine.Substring(2);
+       //             wasB.text = newFirstLine[0].ToString();
+     //               wasE.text = newFirstLine[1].ToString();
+   //                 wasAT.text = newFirstLine.Substring(2);
                 }
                 else
                 {
                     // hide the original B and E; we're just going to use AT
-                    wasB.text = "";
-                    wasE.text = "";
+                    //                wasB.text = "";
+                    //                 wasE.text = "";
 
                     // to make sure the text is centered, line up the AT with SABER's position
                     // but keep its y value
-                    Vector3 newPos = wasSABER.transform.position;
+                    Vector3 newPos = new Vector3(0, 17.38f, 24.82f);
                     newPos.y = wasAT.transform.position.y;
                     wasAT.transform.position = newPos;
 
@@ -171,17 +216,17 @@ namespace TestBSPlugin
             else
             {
                 // Hide "BEAT" entirely; we're just going to use SABER
-                wasB.text = "";
-                wasE.text = "";
+ //               wasB.text = "";
+  //              wasE.text = "";
                 wasAT.text = "";
 
                 // Center "SABER" vertically (halfway between the original positions)
-                Vector3 newPos = wasSABER.transform.position;
-                newPos.y = (newPos.y + wasB.transform.position.y) / 2;
-                wasSABER.transform.position = newPos;
+          //      Vector3 newPos = wasSABER.transform.position;
+      //          newPos.y = (newPos.y + wasB.transform.position.y) / 2;
+          //      wasSABER.transform.position = newPos;
 
                 // Set text color to white by default (users can change it with formatting anyway)
-                wasSABER.color = Color.white;
+           //     wasSABER.color = Color.white;
 
                 // Prevent undesired word wrap
                 wasSABER.overflowMode = TextOverflowModes.Overflow;
