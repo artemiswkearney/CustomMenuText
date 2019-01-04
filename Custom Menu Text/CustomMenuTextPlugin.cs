@@ -13,7 +13,7 @@ namespace TestBSPlugin
     {
         // path to the file to load text from
         private const string FILE_PATH = "/UserData/CustomMenuText.txt";
-
+        public static TMP_FontAsset theFont;
         // used if we can't load any custom entries
         public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
 
@@ -38,7 +38,8 @@ namespace TestBSPlugin
                 }
                 if (allEntries.Count == 0)
                 {
-                    setText(DEFAULT_TEXT);
+                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries! Leaving Original Logo In Tact");
+
                 }
                 else
                 {
@@ -94,11 +95,6 @@ namespace TestBSPlugin
                     // in case the last entry doesn't end in a newline
                     entriesInFile.Add(currentEntry.ToArray());
                 }
-                if (entriesInFile.Count == 0)
-                {
-                    // No entries; warn and continue
-                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries!");
-                }
             }
             else
             {
@@ -132,46 +128,45 @@ namespace TestBSPlugin
             //       TextMeshPro wasSABER = GameObject.Find("SABER").GetComponent<TextMeshPro>();
             //      TextMeshPro wasAT = new GameObject("CustomMenuTextTop").AddComponent<TextMeshPro>();
             //Setup Logo Replacements
-
-            var originalLogo = GameObject.Find("LogoBAT").GetComponent<SpriteRenderer>();
+            var fonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
+            foreach (TMP_FontAsset font in fonts)
+            {
+                if (font.name == "Beon SDF")
+                    theFont = font;
+            }
 
             TextMeshPro wasAT;
             GameObject textObj = new GameObject("CustomMenuText");
             wasAT = textObj.AddComponent<TextMeshPro>();
-            wasAT.text = "";
             wasAT.alignment = TextAlignmentOptions.Center;
             wasAT.fontSize = 12;
-            wasAT.color = Color.white;
-            wasAT.font = Resources.Load<TMP_FontAsset>("Beon");
+            wasAT.color = Color.blue;
+            wasAT.font = theFont;
             wasAT.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
             wasAT.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
             wasAT.rectTransform.position = new Vector3(0.63f, 21.61f, 24.82f);
             wasAT.richText = true;
     
-            textObj.transform.localScale *= 4.0f;
-
+            textObj.transform.localScale *= 3.7f;
             TextMeshPro wasSABER;
             GameObject textObj2 = new GameObject("CustomMenuText-Bot");
             wasSABER = textObj2.AddComponent<TextMeshPro>();
-            wasSABER.text = "";
             wasSABER.alignment = TextAlignmentOptions.Center;
             wasSABER.fontSize = 12;
-            wasSABER.color = Color.white;
-            wasSABER.font = Resources.Load<TMP_FontAsset>("Beon");
+            wasSABER.color = Color.red;
+            wasSABER.font = theFont;
             wasSABER.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
             wasSABER.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
             wasSABER.rectTransform.position = new Vector3(0f, 17f, 24.82f);
             wasSABER.richText = true;
-            textObj2.transform.localScale *= 5.0f;
+            textObj2.transform.localScale *= 3.7f;
 
 
 
             //Logo Top Pos : 0.63, 21.61, 24.82
             // Logo Bottom Pos : 0, 17.38, 24.82
             //Destroy Default Logo
-            GameObject.Destroy(GameObject.Find("LogoE").GetComponent<SpriteRenderer>());
-            GameObject.Destroy(GameObject.Find("LogoBAT").GetComponent<SpriteRenderer>());
-            GameObject.Destroy(GameObject.Find("LogoSABER").GetComponent<SpriteRenderer>());
+            GameObject.Destroy(GameObject.Find("Logo"));
 
 
 
@@ -182,16 +177,18 @@ namespace TestBSPlugin
 
                 // TODO: put more thought/work into keeping the flicker
                 // currently this relies on the font being monospace, which it's not even
+                /*
                 if (newFirstLine.Length == 4)
                 {
                     // we can fit it onto the existing text meshes perfectly
                     // thereby keeping the flicker effect on the second character
-       //             wasB.text = newFirstLine[0].ToString();
-     //               wasE.text = newFirstLine[1].ToString();
-   //                 wasAT.text = newFirstLine.Substring(2);
+                    wasB.text = newFirstLine[0].ToString();
+                    wasE.text = newFirstLine[1].ToString();
+                    wasAT.text = newFirstLine.Substring(2);
                 }
                 else
                 {
+                */
                     // hide the original B and E; we're just going to use AT
                     //                wasB.text = "";
                     //                 wasE.text = "";
@@ -203,7 +200,7 @@ namespace TestBSPlugin
                     wasAT.transform.position = newPos;
 
                     wasAT.text = newFirstLine;
-                }
+                
 
                 wasSABER.text = newSecondLine;
 
@@ -218,7 +215,7 @@ namespace TestBSPlugin
                 // Hide "BEAT" entirely; we're just going to use SABER
  //               wasB.text = "";
   //              wasE.text = "";
-                wasAT.text = "";
+        //        wasAT.text = "";
 
                 // Center "SABER" vertically (halfway between the original positions)
           //      Vector3 newPos = wasSABER.transform.position;
@@ -258,6 +255,7 @@ namespace TestBSPlugin
 
         public void OnUpdate()
         {
+
         }
 
         public void OnFixedUpdate()
