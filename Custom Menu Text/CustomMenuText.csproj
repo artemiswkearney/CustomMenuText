@@ -32,13 +32,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="IllusionPlugin">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\IllusionPlugin.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\IllusionPlugin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -50,11 +50,16 @@
     <Reference Include="System.Xml" />
     <Reference Include="TextMeshPro-1.0.55.2017.1.0b12, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\TextMeshPro-1.0.55.2017.1.0b12.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\TextMeshPro-1.0.55.2017.1.0b12.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -62,4 +67,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(TargetFileName)" "C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
