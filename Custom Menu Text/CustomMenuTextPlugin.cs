@@ -13,7 +13,7 @@ namespace TestBSPlugin
     {
         // path to the file to load text from
         private const string FILE_PATH = "/UserData/CustomMenuText.txt";
-
+        public static TMP_FontAsset theFont;
         // used if we can't load any custom entries
         public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
 
@@ -30,11 +30,7 @@ namespace TestBSPlugin
 
         private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
         {
-        }
-
-        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
-        {
-            if (arg0.name == "Menu") // Only run in menu scene
+            if (arg1.name == "Menu") // Only run in menu scene
             {
                 if (allEntries == null)
                 {
@@ -42,7 +38,8 @@ namespace TestBSPlugin
                 }
                 if (allEntries.Count == 0)
                 {
-                    setText(DEFAULT_TEXT);
+                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries! Leaving Original Logo In Tact");
+
                 }
                 else
                 {
@@ -58,6 +55,11 @@ namespace TestBSPlugin
                     setText(allEntries[entryPicked]);
                 }
             }
+        }
+
+        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {
+           
         }
 
         public static List<string[]> readFromFile(string relPath)
@@ -93,11 +95,6 @@ namespace TestBSPlugin
                     // in case the last entry doesn't end in a newline
                     entriesInFile.Add(currentEntry.ToArray());
                 }
-                if (entriesInFile.Count == 0)
-                {
-                    // No entries; warn and continue
-                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries!");
-                }
             }
             else
             {
@@ -125,10 +122,53 @@ namespace TestBSPlugin
         /// </param>
         public static void setText(string[] lines)
         {
-            TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
-            TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
-            TextMeshPro wasAT = GameObject.Find("AT").GetComponent<TextMeshPro>();
-            TextMeshPro wasSABER = GameObject.Find("SABER").GetComponent<TextMeshPro>();
+            //       TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
+            //      TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
+            //       TextMeshPro wasAT = GameObject.Find("AT").GetComponent<TextMeshPro>();
+            //       TextMeshPro wasSABER = GameObject.Find("SABER").GetComponent<TextMeshPro>();
+            //      TextMeshPro wasAT = new GameObject("CustomMenuTextTop").AddComponent<TextMeshPro>();
+            //Setup Logo Replacements
+            var fonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
+            foreach (TMP_FontAsset font in fonts)
+            {
+                if (font.name == "Beon SDF")
+                    theFont = font;
+            }
+
+            TextMeshPro wasAT;
+            GameObject textObj = new GameObject("CustomMenuText");
+            wasAT = textObj.AddComponent<TextMeshPro>();
+            wasAT.alignment = TextAlignmentOptions.Center;
+            wasAT.fontSize = 12;
+            wasAT.color = Color.blue;
+            wasAT.font = theFont;
+            wasAT.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
+            wasAT.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
+            wasAT.rectTransform.position = new Vector3(0.63f, 21.61f, 24.82f);
+            wasAT.richText = true;
+    
+            textObj.transform.localScale *= 3.7f;
+            TextMeshPro wasSABER;
+            GameObject textObj2 = new GameObject("CustomMenuText-Bot");
+            wasSABER = textObj2.AddComponent<TextMeshPro>();
+            wasSABER.alignment = TextAlignmentOptions.Center;
+            wasSABER.fontSize = 12;
+            wasSABER.color = Color.red;
+            wasSABER.font = theFont;
+            wasSABER.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
+            wasSABER.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
+            wasSABER.rectTransform.position = new Vector3(0f, 17f, 24.82f);
+            wasSABER.richText = true;
+            textObj2.transform.localScale *= 3.7f;
+
+
+
+            //Logo Top Pos : 0.63, 21.61, 24.82
+            // Logo Bottom Pos : 0, 17.38, 24.82
+            //Destroy Default Logo
+            GameObject.Destroy(GameObject.Find("Logo"));
+
+
 
             if (lines.Length == 2)
             {
@@ -137,6 +177,7 @@ namespace TestBSPlugin
 
                 // TODO: put more thought/work into keeping the flicker
                 // currently this relies on the font being monospace, which it's not even
+                /*
                 if (newFirstLine.Length == 4)
                 {
                     // we can fit it onto the existing text meshes perfectly
@@ -147,18 +188,19 @@ namespace TestBSPlugin
                 }
                 else
                 {
+                */
                     // hide the original B and E; we're just going to use AT
-                    wasB.text = "";
-                    wasE.text = "";
+                    //                wasB.text = "";
+                    //                 wasE.text = "";
 
                     // to make sure the text is centered, line up the AT with SABER's position
                     // but keep its y value
-                    Vector3 newPos = wasSABER.transform.position;
+                    Vector3 newPos = new Vector3(0, 17.38f, 24.82f);
                     newPos.y = wasAT.transform.position.y;
                     wasAT.transform.position = newPos;
 
                     wasAT.text = newFirstLine;
-                }
+                
 
                 wasSABER.text = newSecondLine;
 
@@ -171,17 +213,17 @@ namespace TestBSPlugin
             else
             {
                 // Hide "BEAT" entirely; we're just going to use SABER
-                wasB.text = "";
-                wasE.text = "";
-                wasAT.text = "";
+ //               wasB.text = "";
+  //              wasE.text = "";
+        //        wasAT.text = "";
 
                 // Center "SABER" vertically (halfway between the original positions)
-                Vector3 newPos = wasSABER.transform.position;
-                newPos.y = (newPos.y + wasB.transform.position.y) / 2;
-                wasSABER.transform.position = newPos;
+          //      Vector3 newPos = wasSABER.transform.position;
+      //          newPos.y = (newPos.y + wasB.transform.position.y) / 2;
+          //      wasSABER.transform.position = newPos;
 
                 // Set text color to white by default (users can change it with formatting anyway)
-                wasSABER.color = Color.white;
+           //     wasSABER.color = Color.white;
 
                 // Prevent undesired word wrap
                 wasSABER.overflowMode = TextOverflowModes.Overflow;
@@ -213,6 +255,7 @@ namespace TestBSPlugin
 
         public void OnUpdate()
         {
+
         }
 
         public void OnFixedUpdate()
