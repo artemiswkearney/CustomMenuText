@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using IllusionPlugin;
 using TMPro;
+using System.Text;
 
 namespace TestBSPlugin
 {
@@ -13,15 +14,157 @@ namespace TestBSPlugin
     {
         // path to the file to load text from
         private const string FILE_PATH = "/UserData/CustomMenuText.txt";
-        public static TMP_FontAsset theFont;
+        public static TMP_FontAsset beon;
         // used if we can't load any custom entries
         public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
+        public static readonly Color defaultMainColor = new Color(0, 0.5019608f, 1);
+        public static readonly Color defaultBottomColor = Color.red;
+
+        public const string DEFAULT_CONFIG =
+@"# Custom Menu Text v2.2.0
+# by Arti
+# Special Thanks: Kyle1413
+#
+# Use # for comments!
+# Separate entries with empty lines; a random one will be picked each time the menu loads.
+# Appears just like in the vanilla game (except not quite because the vanilla logo is an image now):
+Beat
+Saber
+
+# Entries with a number of lines other than 2 won't be colored by default.
+# Color them yourself with formatting!
+<#0080FF>B<#FF0000>S
+
+# Finally allowed again!
+MEAT
+SABER
+
+# You can override the colors even when the text is 2 lines, plus do a lot of other stuff!
+# (contributed by @Rolo)
+<size=+5><#ffffff>SBU<#ffff00>BBY
+        <size=-15><#1E5142>eef freef.
+
+# Some more random messages:
+BEAT
+SAMER
+
+1337 
+SABER
+
+YEET
+SABER
+
+BEET
+SABER
+
+BAT
+SAVER
+
+SATE
+BIEBER
+
+BEAR
+BEATS
+
+<#0080FF>BEAR <#FF0000>BEATS
+<#DDDDDD>BATTLESTAR GALACTICA
+
+BEE
+MOVIE
+
+MEME
+
+BEAM
+TASER
+
+ENVOY OF
+NEZPHERE
+
+BEER
+TASTER
+
+ABBA
+TREES
+
+EAT
+ASS
+
+BERATE
+ABS
+
+FLYING
+CARS
+
+BEATMANIA
+IIDX
+
+# requested by Reaxt
+<#8A0707>HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+
+<size=+125><#FF0000>HECK
+
+HECK
+OFF
+
+Having problems?
+Ask in <#7289DA>#support
+
+READ
+BOOKS
+
+# wrong colors
+<#FF0000>BEAT
+<#0080FF>SABER
+
+<#0080FF>HARDER
+<#FF0000>BETTER
+<#0080FF>FASTER
+<#FF0000>SABER
+
+DON'T
+PANIC";
 
         // caches entries loaded from the file so we don't need to do IO every time the menu loads
         public static List<string[]> allEntries = null;
 
         public string Name => "Custom Menu Text";
-        public string Version => "2.1.0";
+        public string Version => "2.2.0";
+
+        // Store the text objects so when we leave the menu and come back, we aren't creating a bunch of them
+        public static TextMeshPro mainText;
+        public static TextMeshPro bottomText; // BOTTOM TEXT
+
         public void OnApplicationStart()
         {
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
@@ -38,8 +181,7 @@ namespace TestBSPlugin
                 }
                 if (allEntries.Count == 0)
                 {
-                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries! Leaving Original Logo In Tact");
-
+                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries! Leaving original logo intact.");
                 }
                 else
                 {
@@ -69,9 +211,9 @@ namespace TestBSPlugin
             // Look for the custom text file
             string gameDirectory = Environment.CurrentDirectory;
             gameDirectory = gameDirectory.Replace('\\', '/');
-            if (File.Exists(gameDirectory + FILE_PATH))
+            if (File.Exists(gameDirectory + relPath))
             {
-                var linesInFile = File.ReadLines(gameDirectory + FILE_PATH);
+                var linesInFile = File.ReadLines(gameDirectory + relPath);
 
                 // Strip comments (all lines beginning with #)
                 linesInFile = linesInFile.Where(s => s == "" || s[0] != '#');
@@ -99,12 +241,98 @@ namespace TestBSPlugin
             else
             {
                 // No custom text file found!
-                // Print an error in the console
-                Console.WriteLine("[CustomMenuText] No custom text file found!");
-                Console.WriteLine("Make sure the file is in the UserData folder and named CustomMenuText.txt!");
+                // Create the file and populate it with the default config
+                try
+                {
+                    using (FileStream fs = File.Create(gameDirectory + relPath))
+                    {
+                        Byte[] info = new UTF8Encoding(true).GetBytes(DEFAULT_CONFIG
+                            // normalize newlines to CRLF
+                            .Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n"));
+                        fs.Write(info, 0, info.Length);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("[CustomMenuText] No custom text file found, and an error was encountered trying to generate a default one!");
+                    Console.WriteLine("[CustomMenuText] Error:");
+                    Console.WriteLine(ex);
+                    Console.WriteLine("[CustomMenuText] To use this plugin, manually create the file " + relPath + " in your Beat Saber install directory.");
+                    return entriesInFile;
+                }
+                // File was successfully created; load from it with a recursive call.
+                return readFromFile(relPath);
             }
 
             return entriesInFile;
+        }
+
+        /// <summary>
+        /// Replaces the logo in the main menu (which is an image and not text
+        /// as of game version 0.12.0) with an editable TextMeshPro-based
+        /// version. Performs only the necessary steps (if the logo has already
+        /// been replaced, restores the text's position and color to default
+        /// instead).
+        /// Warning: Only call this function from the main menu scene!
+        /// 
+        /// Code generously donated by Kyle1413; edited some by Arti
+        /// </summary>
+        public static void replaceLogo()
+        {
+            if (beon == null)
+            {
+                var fonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
+                foreach (TMP_FontAsset font in fonts)
+                {
+                    if (font.name == "Beon SDF")
+                        beon = font;
+                }
+            }
+
+            // Logo Top Pos : 0.63, 21.61, 24.82
+            // Logo Bottom Pos : 0, 17.38, 24.82
+
+            if (mainText == null) mainText = GameObject.Find("CustomMenuText")?.GetComponent<TextMeshPro>();
+            if (mainText == null)
+            {
+                GameObject textObj = new GameObject("CustomMenuText");
+                mainText = textObj.AddComponent<TextMeshPro>();
+                mainText.alignment = TextAlignmentOptions.Center;
+                mainText.fontSize = 12;
+                mainText.font = beon;
+                mainText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
+                mainText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
+                mainText.richText = true;
+                textObj.transform.localScale *= 3.7f;
+                mainText.overflowMode = TextOverflowModes.Overflow;
+                mainText.enableWordWrapping = false;
+            }
+            mainText.rectTransform.position = new Vector3(0f, 21.61f, 24.82f);
+            mainText.color = defaultMainColor;
+            mainText.text = "BEAT";
+
+            if (bottomText == null) bottomText = GameObject.Find("CustomMenuText-Bot")?.GetComponent<TextMeshPro>();
+            if (bottomText == null)
+            {
+                GameObject textObj2 = new GameObject("CustomMenuText-Bot");
+                bottomText = textObj2.AddComponent<TextMeshPro>();
+                bottomText.alignment = TextAlignmentOptions.Center;
+                bottomText.fontSize = 12;
+                bottomText.font = beon;
+                bottomText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
+                bottomText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
+                bottomText.richText = true;
+                textObj2.transform.localScale *= 3.7f;
+                bottomText.overflowMode = TextOverflowModes.Overflow;
+                bottomText.enableWordWrapping = false;
+            }
+            bottomText.rectTransform.position = new Vector3(0f, 17f, 24.82f);
+            bottomText.color = defaultBottomColor;
+            mainText.text = "SABER";
+
+            // Destroy Default Logo
+            GameObject defaultLogo = GameObject.Find("Logo");
+            if (defaultLogo != null) GameObject.Destroy(defaultLogo);
         }
 
         /// <summary>
@@ -113,8 +341,6 @@ namespace TestBSPlugin
         /// Additionally:
         /// - If the text is exactly 2 lines long, the first line will be
         ///   displayed in blue, and the second will be displayed in red.
-        ///   - If the first line contains exactly 4 characters, the second will
-        ///     flicker (like the E in BEAT SABER).
         /// Warning: Only call this function from the main menu scene!
         /// </summary>
         /// <param name="lines">
@@ -122,115 +348,29 @@ namespace TestBSPlugin
         /// </param>
         public static void setText(string[] lines)
         {
-            //       TextMeshPro wasB = GameObject.Find("B").GetComponent<TextMeshPro>();
-            //      TextMeshPro wasE = GameObject.Find("E").GetComponent<TextMeshPro>();
-            //       TextMeshPro wasAT = GameObject.Find("AT").GetComponent<TextMeshPro>();
-            //       TextMeshPro wasSABER = GameObject.Find("SABER").GetComponent<TextMeshPro>();
-            //      TextMeshPro wasAT = new GameObject("CustomMenuTextTop").AddComponent<TextMeshPro>();
-            //Setup Logo Replacements
-            var fonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
-            foreach (TMP_FontAsset font in fonts)
-            {
-                if (font.name == "Beon SDF")
-                    theFont = font;
-            }
-
-            TextMeshPro wasAT;
-            GameObject textObj = new GameObject("CustomMenuText");
-            wasAT = textObj.AddComponent<TextMeshPro>();
-            wasAT.alignment = TextAlignmentOptions.Center;
-            wasAT.fontSize = 12;
-            wasAT.color = Color.blue;
-            wasAT.font = theFont;
-            wasAT.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
-            wasAT.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
-            wasAT.rectTransform.position = new Vector3(0.63f, 21.61f, 24.82f);
-            wasAT.richText = true;
-    
-            textObj.transform.localScale *= 3.7f;
-            TextMeshPro wasSABER;
-            GameObject textObj2 = new GameObject("CustomMenuText-Bot");
-            wasSABER = textObj2.AddComponent<TextMeshPro>();
-            wasSABER.alignment = TextAlignmentOptions.Center;
-            wasSABER.fontSize = 12;
-            wasSABER.color = Color.red;
-            wasSABER.font = theFont;
-            wasSABER.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2f);
-            wasSABER.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2f);
-            wasSABER.rectTransform.position = new Vector3(0f, 17f, 24.82f);
-            wasSABER.richText = true;
-            textObj2.transform.localScale *= 3.7f;
-
-
-
-            //Logo Top Pos : 0.63, 21.61, 24.82
-            // Logo Bottom Pos : 0, 17.38, 24.82
-            //Destroy Default Logo
-            GameObject.Destroy(GameObject.Find("Logo"));
-
-
+            // Set up the replacement logo
+            replaceLogo();
 
             if (lines.Length == 2)
             {
-                string newFirstLine = lines[0];
-                string newSecondLine = lines[1];
-
-                // TODO: put more thought/work into keeping the flicker
-                // currently this relies on the font being monospace, which it's not even
-                /*
-                if (newFirstLine.Length == 4)
-                {
-                    // we can fit it onto the existing text meshes perfectly
-                    // thereby keeping the flicker effect on the second character
-                    wasB.text = newFirstLine[0].ToString();
-                    wasE.text = newFirstLine[1].ToString();
-                    wasAT.text = newFirstLine.Substring(2);
-                }
-                else
-                {
-                */
-                    // hide the original B and E; we're just going to use AT
-                    //                wasB.text = "";
-                    //                 wasE.text = "";
-
-                    // to make sure the text is centered, line up the AT with SABER's position
-                    // but keep its y value
-                    Vector3 newPos = new Vector3(0, 17.38f, 24.82f);
-                    newPos.y = wasAT.transform.position.y;
-                    wasAT.transform.position = newPos;
-
-                    wasAT.text = newFirstLine;
-                
-
-                wasSABER.text = newSecondLine;
-
-                // make sure text of any length won't wrap onto multiple lines
-                wasAT.overflowMode = TextOverflowModes.Overflow;
-                wasSABER.overflowMode = TextOverflowModes.Overflow;
-                wasAT.enableWordWrapping = false;
-                wasSABER.enableWordWrapping = false;
+                mainText.text = lines[0];
+                bottomText.text = lines[1];
             }
             else
             {
-                // Hide "BEAT" entirely; we're just going to use SABER
- //               wasB.text = "";
-  //              wasE.text = "";
-        //        wasAT.text = "";
+                // Hide the bottom line entirely; we're just going to use the main one
+                bottomText.text = "";
 
-                // Center "SABER" vertically (halfway between the original positions)
-          //      Vector3 newPos = wasSABER.transform.position;
-      //          newPos.y = (newPos.y + wasB.transform.position.y) / 2;
-          //      wasSABER.transform.position = newPos;
+                // Center the text vertically (halfway between the original positions)
+                Vector3 newPos = mainText.transform.position;
+                newPos.y = (newPos.y + bottomText.transform.position.y) / 2;
+                mainText.transform.position = newPos;
 
                 // Set text color to white by default (users can change it with formatting anyway)
-           //     wasSABER.color = Color.white;
-
-                // Prevent undesired word wrap
-                wasSABER.overflowMode = TextOverflowModes.Overflow;
-                wasSABER.enableWordWrapping = false;
+                mainText.color = Color.white;
 
                 // Set the text
-                wasSABER.text = String.Join("\n", lines);
+                mainText.text = String.Join("\n", lines);
             }
         }
 
