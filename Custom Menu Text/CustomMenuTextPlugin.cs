@@ -24,7 +24,7 @@ namespace CustomMenuText
         public static readonly Color defaultBottomColor = Color.red;
 
         public const string DEFAULT_CONFIG =
-@"# Custom Menu Text v3.0.0
+@"# Custom Menu Text v3.0.1
 # by Arti
 # Special Thanks: Kyle1413
 #
@@ -162,7 +162,7 @@ PANIC";
         public static List<string[]> allEntries = null;
 
         public string Name => "Custom Menu Text";
-        public string Version => "3.0.0";
+        public string Version => "3.0.1";
 
         // Store the text objects so when we leave the menu and come back, we aren't creating a bunch of them
         public static TextMeshPro mainText;
@@ -209,6 +209,10 @@ PANIC";
 
         public static GameObject loadTextPrefab(string path)
         {
+            var oldFonts = GameObject.FindObjectsOfType<TMP_FontAsset>();
+            var glowFonts = oldFonts.Where(f => !f.name.Contains("No Glow"));
+            var mat = glowFonts.FirstOrDefault()?.material;
+
             GameObject prefab;
             string fontPath = Path.Combine(Environment.CurrentDirectory, path);
             if (!File.Exists(fontPath))
@@ -223,6 +227,9 @@ PANIC";
                 AssetBundle beonBundle = AssetBundle.LoadFromMemory(Properties.Resources.Beon);
                 prefab = beonBundle.LoadAsset<GameObject>("Text");
             }
+
+            if (mat != null) prefab.GetComponent<TextMeshPro>().font.material = mat;
+
             return prefab;
         }
 
