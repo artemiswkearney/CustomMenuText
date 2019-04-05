@@ -1,17 +1,36 @@
-﻿using IllusionPlugin;
+﻿using IPA;
+using IPA.Config;
+using IPA.Utilities;
+using System.IO;
+using UnityEngine.SceneManagement;
+using IPALogger = IPA.Logging.Logger;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace CustomMenuText
 {
-    public class CustomMenuTextPlugin : IPlugin
+    public class CustomMenuTextPlugin : IBeatSaberPlugin
     {
+        internal static Ref<PluginConfig> config;
+        internal static IConfigProvider configProvider;
+
+        public void Init(IPALogger logger, [Config.Prefer("json")] IConfigProvider cfgProvider)
+        {
+            Logger.log = logger;
+            configProvider = cfgProvider;
+
+            config = cfgProvider.MakeLink<PluginConfig>((p, v) =>
+            {
+                if (v.Value == null || v.Value.RegenerateConfig)
+                    p.Store(v.Value = new PluginConfig() { RegenerateConfig = false });
+                config = v;
+            });
+        }
+
         // path to the file to load text from
         private const string FILE_PATH = "/UserData/CustomMenuText.txt";
         // path to load the font prefab from
@@ -23,146 +42,8 @@ namespace CustomMenuText
         public static readonly Color defaultMainColor = new Color(0, 0.5019608f, 1);
         public static readonly Color defaultBottomColor = Color.red;
 
-        public const string DEFAULT_CONFIG =
-@"# Custom Menu Text v3.0.1
-# by Arti
-# Special Thanks: Kyle1413
-#
-# Use # for comments!
-# Separate entries with empty lines; a random one will be picked each time the menu loads.
-# Appears just like in the vanilla game (except not quite because the vanilla logo is an image now):
-Beat
-Saber
-
-# Entries with a number of lines other than 2 won't be colored by default.
-# Color them yourself with formatting!
-<#0080FF>B<#FF0000>S
-
-# Finally allowed again!
-MEAT
-SABER
-
-# You can override the colors even when the text is 2 lines, plus do a lot of other stuff!
-# (contributed by @Rolo)
-<size=+5><#ffffff>SBU<#ffff00>BBY
-        <size=-5><#1E5142>eef freef.
-
-# Some more random messages:
-BEAT
-SAMER
-
-1337 
-SABER
-
-YEET
-SABER
-
-BEET
-SABER
-
-BAT
-SAVER
-
-SATE
-BIEBER
-
-BEAR
-BEATS
-
-<#0080FF>BEAR <#FF0000>BEATS
-<#DDDDDD>BATTLESTAR GALACTICA
-
-BEE
-MOVIE
-
-MEME
-
-BEAM
-TASER
-
-ENVOY OF
-NEZPHERE
-
-BEER
-TASTER
-
-ABBA
-TREES
-
-EAT
-ASS
-
-BERATE
-ABS
-
-FLYING
-CARS
-
-BEATMANIA
-IIDX
-
-# requested by Reaxt
-<#8A0707>HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-
-<size=+125><#FF0000>HECK
-
-HECK
-OFF
-
-Having problems?
-Ask in <#7289DA>#support
-
-READ
-BOOKS
-
-# wrong colors
-<#FF0000>BEAT
-<#0080FF>SABER
-
-<#0080FF>HARDER
-<#FF0000>BETTER
-<#0080FF>FASTER
-<#FF0000>SABER
-
-DON'T
-PANIC";
-
         // caches entries loaded from the file so we don't need to do IO every time the menu loads
         public static List<string[]> allEntries = null;
-
-        public string Name => "Custom Menu Text";
-        public string Version => "3.0.1";
 
         // Store the text objects so when we leave the menu and come back, we aren't creating a bunch of them
         public static TextMeshPro mainText;
@@ -170,13 +51,27 @@ PANIC";
 
         public void OnApplicationStart()
         {
-            SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
-            SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+            Logger.log.Debug("OnApplicationStart");
         }
 
-        private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
+        public void OnApplicationQuit()
         {
-            if (arg1.name == "MenuCore") // Only run in menu scene
+            Logger.log.Debug("OnApplicationQuit");
+        }
+
+        public void OnFixedUpdate()
+        {
+
+        }
+
+        public void OnUpdate()
+        {
+
+        }
+
+        public void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
+        {
+            if (nextScene.name == "MenuCore") // Only run in menu scene
             {
                 if (allEntries == null)
                 {
@@ -202,9 +97,14 @@ PANIC";
             }
         }
 
-        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
+        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
-           
+
+        }
+
+        public void OnSceneUnloaded(Scene scene)
+        {
+
         }
 
         public static GameObject loadTextPrefab(string path)
@@ -404,27 +304,139 @@ PANIC";
             allEntries = readFromFile(FILE_PATH);
         }
 
-        public void OnApplicationQuit()
-        {
-            SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
-            SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
-        }
+        public const string DEFAULT_CONFIG =
+@"# Custom Menu Text v3.0.2
+# by Arti
+# Special Thanks: Kyle1413
+#
+# Use # for comments!
+# Separate entries with empty lines; a random one will be picked each time the menu loads.
+# Appears just like in the vanilla game (except not quite because the vanilla logo is an image now):
+Beat
+Saber
 
-        public void OnLevelWasLoaded(int level)
-        {
-        }
+# Entries with a number of lines other than 2 won't be colored by default.
+# Color them yourself with formatting!
+<#0080FF>B<#FF0000>S
 
-        public void OnLevelWasInitialized(int level)
-        {
-        }
+# Finally allowed again!
+MEAT
+SABER
 
-        public void OnUpdate()
-        {
+# You can override the colors even when the text is 2 lines, plus do a lot of other stuff!
+# (contributed by @Rolo)
+<size=+5><#ffffff>SBU<#ffff00>BBY
+        <size=-5><#1E5142>eef freef.
 
-        }
+# Some more random messages:
+BEAT
+SAMER
 
-        public void OnFixedUpdate()
-        {
-        }
+1337 
+SABER
+
+YEET
+SABER
+
+BEET
+SABER
+
+BAT
+SAVER
+
+SATE
+BIEBER
+
+BEAR
+BEATS
+
+<#0080FF>BEAR <#FF0000>BEATS
+<#DDDDDD>BATTLESTAR GALACTICA
+
+BEE
+MOVIE
+
+MEME
+
+BEAM
+TASER
+
+ENVOY OF
+NEZPHERE
+
+BEER
+TASTER
+
+ABBA
+TREES
+
+EAT
+ASS
+
+BERATE
+ABS
+
+FLYING
+CARS
+
+BEATMANIA
+IIDX
+
+# requested by Reaxt
+<#8A0707>HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
+
+<size=+125><#FF0000>HECK
+
+HECK
+OFF
+
+Having problems?
+Ask in <#7289DA>#support
+
+READ
+BOOKS
+
+# wrong colors
+<#FF0000>BEAT
+<#0080FF>SABER
+
+<#0080FF>HARDER
+<#FF0000>BETTER
+<#0080FF>FASTER
+<#FF0000>SABER
+
+DON'T
+PANIC";
     }
 }
