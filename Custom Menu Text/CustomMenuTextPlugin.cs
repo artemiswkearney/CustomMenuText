@@ -1,4 +1,4 @@
-﻿using IllusionPlugin;
+﻿using IPA.Old;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,13 +20,13 @@ namespace CustomMenuText
         public static GameObject textPrefab;
         // used if we can't load any custom entries
         public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
-        public static readonly Color defaultMainColor = new Color(0, 0.5019608f, 1);
-        public static readonly Color defaultBottomColor = Color.red;
+        public static readonly Color defaultMainColor = Color.red;
+        public static readonly Color defaultBottomColor = new Color(0, 0.5019608f, 1);
 
         public const string DEFAULT_CONFIG =
-@"# Custom Menu Text v3.0.1
+@"# Custom Menu Text v3.1.0
 # by Arti
-# Special Thanks: Kyle1413
+# Special Thanks: Kyle1413, Alphie
 #
 # Use # for comments!
 # Separate entries with empty lines; a random one will be picked each time the menu loads.
@@ -36,7 +36,7 @@ Saber
 
 # Entries with a number of lines other than 2 won't be colored by default.
 # Color them yourself with formatting!
-<#0080FF>B<#FF0000>S
+<#FF0000>B<#0080FF>S
 
 # Finally allowed again!
 MEAT
@@ -45,7 +45,7 @@ SABER
 # You can override the colors even when the text is 2 lines, plus do a lot of other stuff!
 # (contributed by @Rolo)
 <size=+5><#ffffff>SBU<#ffff00>BBY
-        <size=-5><#1E5142>eef freef.
+            <size=5><#1E5142>eef freef.
 
 # Some more random messages:
 BEAT
@@ -69,7 +69,7 @@ BIEBER
 BEAR
 BEATS
 
-<#0080FF>BEAR <#FF0000>BEATS
+<#FF0000>BEAR <#0080FF>BEATS
 <#DDDDDD>BATTLESTAR GALACTICA
 
 BEE
@@ -141,32 +141,40 @@ HECK
 OFF
 
 Having problems?
-Ask in <#7289DA>#support
+Ask in <#7289DA>#pc-help
 
 READ
 BOOKS
 
 # wrong colors
-<#FF0000>BEAT
-<#0080FF>SABER
-
-<#0080FF>HARDER
-<#FF0000>BETTER
-<#0080FF>FASTER
+<#0080FF>BEAT
 <#FF0000>SABER
 
+<#FF0000>HARDER
+<#0080FF>BETTER
+<#FF0000>FASTER
+<#0080FF>SABER
+
 DON'T
-PANIC";
+PANIC
+
+<line-height=75%><#cf7100>ARTI
+<#FF0000><size=+4><</size>3
+<#0080FF>JADE
+
+<i>slontey";
 
         // caches entries loaded from the file so we don't need to do IO every time the menu loads
         public static List<string[]> allEntries = null;
 
         public string Name => "Custom Menu Text";
-        public string Version => "3.0.1";
+        public string Version => "3.1.0";
 
         // Store the text objects so when we leave the menu and come back, we aren't creating a bunch of them
         public static TextMeshPro mainText;
         public static TextMeshPro bottomText; // BOTTOM TEXT
+
+        public System.Random random;
 
         public void OnApplicationStart()
         {
@@ -176,7 +184,7 @@ PANIC";
 
         private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
         {
-            if (arg1.name == "MenuCore") // Only run in menu scene
+            if (arg0.name == "EmptyTransition" && arg1.name.Contains("Menu")) // Only run in menu scene
             {
                 if (allEntries == null)
                 {
@@ -188,18 +196,27 @@ PANIC";
                 }
                 else
                 {
-                    // Choose an entry randomly
-
-                    // Unity's random seems to give biased results
-                    // int entryPicked = UnityEngine.Random.Range(0, entriesInFile.Count);
-                    // using System.Random instead
-                    System.Random r = new System.Random();
-                    int entryPicked = r.Next(allEntries.Count);
-
-                    // Set the text
-                    setText(allEntries[entryPicked]);
+                    pickRandomEntry();
                 }
             }
+        }
+
+        /// <summary>
+        /// Chooses a random entry from the current config and sets the menu text to that entry.
+        /// Warning: Only call this function from the main menu scene!
+        /// </summary>
+        public void pickRandomEntry()
+        {
+            // Choose an entry randomly
+
+            // Unity's random seems to give biased results
+            // int entryPicked = UnityEngine.Random.Range(0, entriesInFile.Count);
+            // using System.Random instead
+            if (random == null) random = new System.Random();
+            int entryPicked = random.Next(allEntries.Count);
+
+            // Set the text
+            setText(allEntries[entryPicked]);
         }
 
         private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
@@ -209,26 +226,20 @@ PANIC";
 
         public static GameObject loadTextPrefab(string path)
         {
-            var oldFonts = GameObject.FindObjectsOfType<TMP_FontAsset>();
-            var glowFonts = oldFonts.Where(f => !f.name.Contains("No Glow"));
-            var mat = glowFonts.FirstOrDefault()?.material;
-
             GameObject prefab;
             string fontPath = Path.Combine(Environment.CurrentDirectory, path);
             if (!File.Exists(fontPath))
             {
-                File.WriteAllBytes(fontPath, Properties.Resources.Beon);
+                File.WriteAllBytes(fontPath, Properties.Resources.NeonTubes);
             }
             AssetBundle fontBundle = AssetBundle.LoadFromFile(fontPath);
             prefab = fontBundle.LoadAsset<GameObject>("Text");
             if (prefab == null)
             {
-                Console.WriteLine("[CustomMenuText] No text prefab found in the provided AssetBundle! Using Beon.");
-                AssetBundle beonBundle = AssetBundle.LoadFromMemory(Properties.Resources.Beon);
+                Console.WriteLine("[CustomMenuText] No text prefab found in the provided AssetBundle! Using NeonTubes.");
+                AssetBundle beonBundle = AssetBundle.LoadFromMemory(Properties.Resources.NeonTubes);
                 prefab = beonBundle.LoadAsset<GameObject>("Text");
             }
-
-            if (mat != null) prefab.GetComponent<TextMeshPro>().font.material = mat;
 
             return prefab;
         }
@@ -365,7 +376,7 @@ PANIC";
         /// the text of your choice. TextMeshPro formatting can be used here.
         /// Additionally:
         /// - If the text is exactly 2 lines long, the first line will be
-        ///   displayed in blue, and the second will be displayed in red.
+        ///   displayed in red, and the second will be displayed in blue.
         /// Warning: Only call this function from the main menu scene!
         /// </summary>
         /// <param name="lines">
@@ -402,6 +413,56 @@ PANIC";
         public void reloadFile()
         {
             allEntries = readFromFile(FILE_PATH);
+        }
+
+        /// <summary>
+        /// Saves the current value of <see cref="allEntries"/> to the default config location.
+        /// Warning: effectively strips comments from the file!
+        /// </summary>
+        public void writeFile()
+        {
+            // join entries by two newlines and lines by one
+            string contents = String.Join("\n\n", allEntries.Select(e => String.Join("\n", e)));
+            string gameDirectory = Environment.CurrentDirectory;
+            gameDirectory = gameDirectory.Replace('\\', '/');
+            var path = gameDirectory + FILE_PATH;
+            try
+            {
+                using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
+                {
+                    Byte[] info = new UTF8Encoding(true).GetBytes(contents
+                        // normalize newlines to CRLF
+                        .Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n"));
+                    fs.Write(info, 0, info.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[CustomMenuText] Failed to save config!");
+                Console.WriteLine("[CustomMenuText] Error:");
+                Console.WriteLine(ex);
+            }
+        }
+
+        /// <summary>
+        /// Overwrites the current config with the default and loads it.
+        /// </summary>
+        public void restoreDefaultConfig()
+        {
+            string gameDirectory = Environment.CurrentDirectory;
+            gameDirectory = gameDirectory.Replace('\\', '/');
+            var path = gameDirectory + FILE_PATH;
+            try
+            {
+                if (File.Exists(path)) File.Delete(path);
+                reloadFile();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[CustomMenuText] Failed to save config!");
+                Console.WriteLine("[CustomMenuText] Error:");
+                Console.WriteLine(ex);
+            }
         }
 
         public void OnApplicationQuit()

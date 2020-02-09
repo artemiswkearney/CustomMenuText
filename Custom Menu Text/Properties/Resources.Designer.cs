@@ -63,9 +63,9 @@ namespace CustomMenuText.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] Beon {
+        internal static byte[] NeonTubes {
             get {
-                object obj = ResourceManager.GetObject("Beon", resourceCulture);
+                object obj = ResourceManager.GetObject("NeonTubes", resourceCulture);
                 return ((byte[])(obj));
             }
         }
