@@ -12,6 +12,8 @@ namespace CustomMenuText
 {
     public class CustomMenuTextPlugin : IPlugin
     {
+        public static CustomMenuTextPlugin instance;
+
         // path to the file to load text from
         private const string FILE_PATH = "/UserData/CustomMenuText.txt";
         // path to load the font prefab from
@@ -24,7 +26,7 @@ namespace CustomMenuText
         public static readonly Color defaultBottomColor = new Color(0, 0.5019608f, 1);
 
         public const string DEFAULT_CONFIG =
-@"# Custom Menu Text v3.1.0
+@"# Custom Menu Text v3.1.1
 # by Arti
 # Special Thanks: Kyle1413, Alphie
 #
@@ -168,7 +170,7 @@ PANIC
         public static List<string[]> allEntries = null;
 
         public string Name => "Custom Menu Text";
-        public string Version => "3.1.0";
+        public string Version => "3.1.1";
 
         // Store the text objects so when we leave the menu and come back, we aren't creating a bunch of them
         public static TextMeshPro mainText;
@@ -178,13 +180,14 @@ PANIC
 
         public void OnApplicationStart()
         {
+            instance = this;
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
         }
 
         private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
         {
-            if (arg0.name == "EmptyTransition" && arg1.name.Contains("Menu")) // Only run in menu scene
+            if (arg1.name.Contains("Menu")) // Only run in menu scene
             {
                 if (allEntries == null)
                 {
